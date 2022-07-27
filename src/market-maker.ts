@@ -1,3 +1,9 @@
-import 'dotenv/config'
+import { getFullMarkets } from './api'
 
-console.log('hello world!', process.env.MANIFOLD_API_KEY)
+const main = async () => {
+  const markets = await getFullMarkets()
+  console.log('Loaded', markets.length, 'markets')
+}
+
+console.log('hello world!')
+main()
