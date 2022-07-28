@@ -12,13 +12,21 @@ import type { Bet, FullMarket } from './types'
 const mode = true ? 'ADD_BETS' : 'RESET'
 
 const main = async () => {
-  const myBets = await getBets('JamesBot')
+  const username = process.env.MANIFOLD_USERNAME
+  const key = process.env.MANIFOLD_API_KEY
+  if (!username) {
+    throw new Error('Please set MANIFOLD_USERNAME variable in .env file.')
+  }
+  if (!key) {
+    throw new Error('Please set MANIFOLD_API_KEY variable in .env file.')
+  }
+  const myBets = await getBets(username)
   const myContractIds = uniq(myBets.map((bet) => bet.contractId))
 
   console.log(
-    'got bets',
+    'Got bets',
     myBets.length,
-    'contracts bet on',
+    'Contracts bet on',
     myContractIds.length
   )
 
@@ -53,7 +61,7 @@ const betOnTopMarkets = async (excludeContractIds: string[]) => {
       )
 
       if (marketBets.length >= 10) {
-        console.log('{lacing orders for', fullMarket.question)
+        console.log('Placing orders for', fullMarket.question)
         await placeLimitBets(fullMarket)
       }
     }),
@@ -73,9 +81,7 @@ const placeLimitBets = async (market: FullMarket) => {
   const { bets, id } = market
 
   const sortedBets = sortBy(bets, (bet) => bet.createdTime)
-
   const marketBets = sortedBets.filter((bet) => bet.limitProb === undefined)
-  console.log('Market bets', marketBets.length)
 
   const vol = sumBy(marketBets, (bet) => Math.abs(bet.amount))
   const logVol = Math.log(vol)
@@ -85,8 +91,6 @@ const placeLimitBets = async (market: FullMarket) => {
   const limitBets = ranges
     .map((range, i) => rangeToBets(range, amount * (i + 1)))
     .flat()
-
-  console.log('Placing limit bets')
 
   await Promise.all(
     limitBets.map((bet) => placeBet({ ...bet, contractId: id }))
@@ -122,8 +126,6 @@ const computeRanges = (marketBets: Bet[]) => {
     high2,
     average,
     std,
-    vol,
-    logVol,
     updateFactor,
   })
 
