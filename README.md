@@ -4,8 +4,13 @@ Create limit orders via the Manifold API to provide liquidity, and potentially m
 
 1. Clone the repository
 2. Locate your Manifold API Key. You can find it in Your profile => Edit => Api key.
-3. Create a `.env` file in the root directory with your api key, replacing the `xxx`'s
-   `MANIFOLD_API_KEY=xxxxxxxxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`
+3. Create a `.env` file in the root directory with your api key, replacing the `xxx`'s, and your username.
+
+   ```
+   MANIFOLD_API_KEY=xxxxxxxxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+   MANIFOLD_USERNAME=YourUsername
+   ```
+
 4. Install npm packages with `yarn`
 5. Run `yarn start`
 
