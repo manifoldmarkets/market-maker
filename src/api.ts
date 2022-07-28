@@ -1,31 +1,100 @@
 import 'dotenv/config'
 import fetch from 'node-fetch'
-import { FullMarket, LiteMarket } from './types'
+import { Bet, FullMarket, LiteMarket } from './types'
 
 const yourKey = process.env.MANIFOLD_API_KEY
 
 const API_URL = 'https://manifold.markets/api/v0'
 
-const getFullMarket = async (id: string) => {
+export const getFullMarket = async (id: string) => {
   const market: FullMarket = await fetch(`${API_URL}/market/${id}`).then(
     (res) => res.json()
   )
   return market
 }
 
-export const getBets = async (marketId: string) => {
-  const { bets } = await getFullMarket(marketId)
-  return bets
-}
-
-export const getMarkets = async () => {
+const getMarkets = async (limit = 1000, before?: string) => {
   const markets: LiteMarket[] = await fetch(
-    `${API_URL}/markets?limit=100`
+    before
+      ? `${API_URL}/markets?limit=${limit}&before=${before}`
+      : `${API_URL}/markets?limit=${limit}`
   ).then((res) => res.json())
+
   return markets
 }
 
-export const getFullMarkets = async () => {
-  const markets = await getMarkets()
-  return await Promise.all(markets.map((market) => getFullMarket(market.id)))
+export const getAllMarkets = async () => {
+  const allMarkets = []
+  let before: string | undefined = undefined
+
+  while (true) {
+    const markets: LiteMarket[] = await getMarkets(1000, before)
+
+    allMarkets.push(...markets)
+    before = markets[markets.length - 1].id
+    console.log('Loaded', allMarkets.length, 'markets', 'before', before)
+
+    if (markets.length < 1000) break
+  }
+
+  return allMarkets
+}
+
+export const getMarketBySlug = async (slug: string) => {
+  const market: FullMarket = await fetch(`${API_URL}/slug/${slug}`).then(
+    (res) => res.json()
+  )
+  return market
+}
+
+export const getBets = async (username: string) => {
+  const bets: Bet[] = await fetch(`${API_URL}/bets?username=${username}`).then(
+    (res) => res.json()
+  )
+  return bets
+}
+
+export const placeBet = (bet: {
+  contractId: string
+  outcome: 'YES' | 'NO'
+  amount: number
+  limitProb?: number
+}) => {
+  return fetch(`${API_URL}/bet`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Key ${yourKey}`,
+    },
+    body: JSON.stringify(bet),
+  }).then((res) => res.json())
+}
+
+export const cancelBet = (betId: string) => {
+  return fetch(`${API_URL}/bet/cancel/${betId}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Key ${yourKey}`,
+    },
+  }).then((res) => res.json())
+}
+
+export const batchedWaitAll = async <T>(
+  createPromises: (() => Promise<T>)[],
+  batchSize = 10
+) => {
+  const numBatches = Math.ceil(createPromises.length / batchSize)
+  const result: T[] = []
+  for (let batchIndex = 0; batchIndex < numBatches; batchIndex++) {
+    const from = batchIndex * batchSize
+    const to = from + batchSize
+
+    const promises = createPromises.slice(from, to).map((f) => f())
+
+    const batch = await Promise.all(promises)
+    result.push(...batch)
+  }
+
+  return result
 }
