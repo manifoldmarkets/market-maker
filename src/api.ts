@@ -47,11 +47,34 @@ export const getMarketBySlug = async (slug: string) => {
   return market
 }
 
-export const getBets = async (username: string) => {
-  const bets: Bet[] = await fetch(`${API_URL}/bets?username=${username}`).then(
-    (res) => res.json()
-  )
+const getBets = async (
+  username: string,
+  limit = 1000,
+  before: string | undefined = undefined
+) => {
+  const bets: Bet[] = await fetch(
+    before
+      ? `${API_URL}/bets?username=${username}&limit=${limit}&before=${before}`
+      : `${API_URL}/bets?username=${username}&limit=${limit}`
+  ).then((res) => res.json())
   return bets
+}
+
+export const getAllBets = async (username: string) => {
+  const allBets: Bet[] = []
+  let before: string | undefined = undefined
+
+  while (true) {
+    const bets: Bet[] = await getBets(username, 1000, before)
+
+    allBets.push(...bets)
+    before = bets[bets.length - 1].id
+    console.log('Loaded', allBets.length, 'bets', 'before', before)
+
+    if (bets.length < 1000) break
+  }
+
+  return allBets
 }
 
 export const placeBet = (bet: {

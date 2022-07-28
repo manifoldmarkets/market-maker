@@ -2,8 +2,8 @@ import { sortBy, sumBy, uniq } from 'lodash'
 import {
   batchedWaitAll,
   cancelBet,
+  getAllBets,
   getAllMarkets,
-  getBets,
   getFullMarket,
   placeBet,
 } from './api'
@@ -20,7 +20,7 @@ const main = async () => {
   if (!key) {
     throw new Error('Please set MANIFOLD_API_KEY variable in .env file.')
   }
-  const myBets = await getBets(username)
+  const myBets = await getAllBets(username)
   const myContractIds = uniq(myBets.map((bet) => bet.contractId))
 
   console.log(
