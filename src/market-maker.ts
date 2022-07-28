@@ -61,8 +61,9 @@ const betOnTopMarkets = async (excludeContractIds: string[]) => {
       )
 
       if (marketBets.length >= 10) {
-        console.log('Placing orders for', fullMarket.question)
-        await placeLimitBets(fullMarket)
+        const bets = await placeLimitBets(fullMarket)
+        if (bets.length)
+          console.log('Placed orders for', fullMarket.question, ':', bets)
       }
     }),
     10
@@ -95,6 +96,7 @@ const placeLimitBets = async (market: FullMarket) => {
   await Promise.all(
     limitBets.map((bet) => placeBet({ ...bet, contractId: id }))
   )
+  return limitBets
 }
 
 const computeRanges = (marketBets: Bet[]) => {
@@ -116,18 +118,7 @@ const computeRanges = (marketBets: Bet[]) => {
     lastPrice - downSpread + Math.min(average, 0),
     lastPrice + upSpread + Math.max(0, average),
   ]
-
   const [low2, high2] = [low - std, high + std]
-
-  console.log({
-    low,
-    high,
-    low2,
-    high2,
-    average,
-    std,
-    updateFactor,
-  })
 
   return [[low, high] as [number, number], [low2, high2] as [number, number]]
 }
