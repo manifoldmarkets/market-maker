@@ -5,6 +5,7 @@ import {
   getAllBets,
   getAllMarkets,
   getFullMarket,
+  getMarketBets,
   placeBet,
 } from './api'
 import type { Bet, FullMarket } from './types'
@@ -50,17 +51,20 @@ const betOnTopMarkets = async (excludeContractIds: string[]) => {
         !market.isResolved && market.closeTime && market.closeTime > Date.now()
     )
     .filter((market) => !excludeContractIds.includes(market.id))
+    .slice(1, 3)
 
   console.log('Open binary markets', openBinaryMarkets.length)
 
   await batchedWaitAll(
     openBinaryMarkets.map((market) => async () => {
       const fullMarket = await getFullMarket(market.id)
-      const marketBets = fullMarket.bets.filter(
+
+      const marketBets = await getMarketBets(market.id)
+      const nonLimitBets = marketBets.filter(
         (bet) => bet.limitProb === undefined
       )
 
-      if (marketBets.length >= 10) {
+      if (nonLimitBets.length >= 10) {
         const bets = await placeLimitBets(fullMarket)
         if (bets.length)
           console.log('Placed orders for', fullMarket.question, ':', bets)
