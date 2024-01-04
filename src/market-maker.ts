@@ -51,7 +51,6 @@ const betOnTopMarkets = async (excludeContractIds: string[]) => {
         !market.isResolved && market.closeTime && market.closeTime > Date.now()
     )
     .filter((market) => !excludeContractIds.includes(market.id))
-    .slice(1, 3)
 
   console.log('Open binary markets', openBinaryMarkets.length)
 
