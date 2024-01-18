@@ -4,7 +4,7 @@ import { Bet, FullMarket, LiteMarket } from './types'
 
 const yourKey = process.env.MANIFOLD_API_KEY
 
-const API_URL = 'https://dev.manifold.markets/api/v0'
+const API_URL = 'https://manifold.markets/api/v0'
 
 export const getFullMarket = async (id: string) => {
   const market: FullMarket = await fetch(`${API_URL}/market/${id}`).then(
