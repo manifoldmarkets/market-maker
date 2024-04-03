@@ -13,6 +13,13 @@ export const getFullMarket = async (id: string) => {
   return market
 }
 
+export const getMarketBets = async (id: string) => {
+  const fullMarket: Bet[] = await fetch(`${API_URL}/bets?contractId=${id}`).then(
+    (res) => res.json()
+  )
+  return fullMarket
+}
+
 const getMarkets = async (limit = 1000, before?: string) => {
   const markets: LiteMarket[] = await fetch(
     before
@@ -68,7 +75,7 @@ export const getAllBets = async (username: string) => {
     const bets: Bet[] = await getBets(username, 1000, before)
 
     allBets.push(...bets)
-    before = bets[bets.length - 1].id
+    before = bets[bets.length - 1]?.id
     console.log('Loaded', allBets.length, 'bets', 'before', before)
 
     if (bets.length < 1000) break
