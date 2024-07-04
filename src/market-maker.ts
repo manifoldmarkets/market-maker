@@ -56,17 +56,18 @@ const betOnTopMarkets = async (excludeContractIds: string[]) => {
   await batchedWaitAll(
     openBinaryMarkets.map((market) => async () => {
       const fullMarket = await getFullMarket(market.id)
+      if (fullMarket.bets === undefined) return
       const marketBets = fullMarket.bets.filter(
         (bet) => bet.limitProb === undefined
       )
-
+      
       if (marketBets.length >= 10) {
         const bets = await placeLimitBets(fullMarket)
         if (bets.length)
           console.log('Placed orders for', fullMarket.question, ':', bets)
       }
     }),
-    10
+    2
   )
 }
 

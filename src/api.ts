@@ -66,7 +66,7 @@ export const getAllBets = async (username: string) => {
 
   while (true) {
     const bets: Bet[] = await getBets(username, 1000, before)
-
+    if (bets.length === 0) break
     allBets.push(...bets)
     before = bets[bets.length - 1].id
     console.log('Loaded', allBets.length, 'bets', 'before', before)
